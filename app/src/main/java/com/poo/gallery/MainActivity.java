@@ -1,8 +1,10 @@
 package com.poo.gallery;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -10,12 +12,14 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.FileProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.io.File;
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity implements PhotoAdapter.onPhotoListener {
+public class MainActivity extends AppCompatActivity implements PhotoAdapter.onPhotoListener,PhotoDialog.diaLogListener {
 
     private static final int REQUEST_STORAGE = 11;
     private ArrayList<String> mListPath;
@@ -25,6 +29,7 @@ public class MainActivity extends AppCompatActivity implements PhotoAdapter.onPh
 
     private RecyclerView rvItem;
     private PhotoAdapter photoAdapter;
+    private PhotoDialog dialog;
 
 
     @Override
@@ -80,9 +85,25 @@ public class MainActivity extends AppCompatActivity implements PhotoAdapter.onPh
 
 
     public void clickPhoto(String path) {
-        PhotoDialog dialog = new PhotoDialog(this,path);
+        dialog = new PhotoDialog(this,path);
         dialog.show();
+        dialog.setDialogListener(this);
+
     }
+
+    @Override
+    public void clickDialog(String path){
+
+        Uri photoUri = FileProvider.getUriForFile(this,
+                getApplicationContext().getPackageName() + ".provider",
+                new File(path));
+        Intent intent = new Intent();
+        intent.putExtra(Intent.EXTRA_STREAM, photoUri);
+        intent.setType("image/*");
+        intent.setAction(Intent.ACTION_SEND);
+        startActivity(intent);
+    }
+
 
 
 }
